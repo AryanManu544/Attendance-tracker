@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 const Login = ({ mode, showalert }) => {
     const [credentials, setCredentials] = useState({ email: "", password: "" });
-    let navigate = useNavigate();
+    const navigate = useNavigate();
 
     useEffect(() => {
         document.body.setAttribute("data-theme", mode);
@@ -22,7 +22,7 @@ const Login = ({ mode, showalert }) => {
                 body: JSON.stringify(credentials),
             });
             const json = await response.json();
-            if (json.success) {
+            if (json.authtoken) {
                 localStorage.setItem("token", json.authtoken);
                 showalert("Logged in successfully", "success");
                 navigate("/");
@@ -31,6 +31,7 @@ const Login = ({ mode, showalert }) => {
             }
         } catch (error) {
             console.error("Error:", error);
+            showalert("An error occurred", "danger");
         }
     };
 

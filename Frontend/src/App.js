@@ -6,33 +6,15 @@ import Login from './Login';
 import Signup from './Signup';
 import PrivateRoute from './Privateroute';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Navbar from './Components/Navbar';
 
 const App = () => {
   // Simple alert function for demonstration
   const showAlert = (msg, type) => alert(`${type}: ${msg}`);
   const mode = "light";
-
   return (
     <Router>
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <Link className="navbar-brand" to="/">Attendance Tracker</Link>
-        <div className="collapse navbar-collapse">
-          <ul className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/">View Attendance</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/mark">Mark Attendance</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/login">Login</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/signup">Signup</Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
+      <Navbar mode={mode} showalert={showAlert} />
       <div className="container mt-4">
         <Routes>
           {/* Protected routes */}
