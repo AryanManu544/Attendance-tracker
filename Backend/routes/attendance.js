@@ -46,4 +46,59 @@ router.get("/view", fetchuser, async (req, res) => {
   }
 });
 
+// Route to edit attendances for the logged-in user
+router.put("/edit/:id", fetchuser, async (req, res) => {
+  try {
+    const { className, status } = req.body;
+    const newAttendance = {};
+
+    if (className) newAttendance.className = className;
+    if (status) newAttendance.status = status;
+
+    // Find the attendance record by ID
+    let attendance = await Attendance.findById(req.params.id);
+    if (!attendance) {
+      return res.status(404).send("Attendance not found");
+    }
+
+    // Ensure the logged-in user owns the attendance record
+    // (Assuming you stored the user ID in the 'student' field when creating the record)
+    if (attendance.student.toString() !== req.user.id) {
+      return res.status(401).send("Not allowed");
+    }
+
+    // Update the attendance record and return the updated record
+    attendance = await Attendance.findByIdAndUpdate(
+      req.params.id,
+      { $set: newAttendance },
+      { new: true }
+    );
+    res.json(attendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Route to delete an attendance record for the logged-in user
+router.delete("/delete/:id", fetchuser, async (req, res) => {
+  try {
+    // Find the attendance record by ID
+    let attendance = await Attendance.findById(req.params.id);
+    if (!attendance) {
+      return res.status(404).send("Attendance not found");
+    }
+    // Ensure the logged-in user owns the attendance record
+    if (attendance.student.toString() !== req.user.id) {
+      return res.status(401).send("Not allowed");
+    }
+    // Delete the attendance record
+    await Attendance.findByIdAndDelete(req.params.id);
+    res.json({ success: "Attendance record deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;

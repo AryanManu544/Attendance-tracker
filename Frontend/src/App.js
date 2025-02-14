@@ -7,11 +7,18 @@ import Signup from './Signup';
 import PrivateRoute from './Privateroute';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './Components/Navbar';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const App = () => {
   // Simple alert function for demonstration
   const showAlert = (msg, type) => alert(`${type}: ${msg}`);
   const mode = "light";
+
+  const handleUpdateAttendance = (record) => {
+    // Implement your editing logic here, e.g., open a modal or navigate to an edit page
+    console.log("Editing attendance record:", record);
+  };  
+
   return (
     <Router>
       <Navbar mode={mode} showalert={showAlert} />
@@ -22,7 +29,7 @@ const App = () => {
             path="/" 
             element={
               <PrivateRoute>
-                <ViewAttendance />
+                <ViewAttendance updateAttendance={handleUpdateAttendance} mode="light"/>
               </PrivateRoute>
             } 
           />
