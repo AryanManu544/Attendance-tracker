@@ -15,16 +15,18 @@ const Login = ({ mode, showalert }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Using API Base URL:", API_BASE_URL);
-
+  
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://presenze-plum.netlify.app/.netlify/functions/server";
+    
+    console.log("Using API Base URL:", API_BASE_URL); // ✅ Moved below declaration
+  
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://presenze-plum.netlify.app/.netlify/functions/server";
-
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
+  
       const json = await response.json();
       if (json.authtoken) {
         localStorage.setItem("token", json.authtoken);
