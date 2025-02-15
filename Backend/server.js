@@ -16,7 +16,7 @@ app.use(
 );
 
 // MongoDB Connection (optimized for serverless)
-const mongoURI = process.env.MONGO_URI || "your-mongo-db-uri";
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/Attendance_tracker";
 
 const connectDB = async () => {
   if (mongoose.connection.readyState !== 1) {
