@@ -17,7 +17,7 @@ const Navbar = ({ mode, showalert, toggleMode }) => {
       style={mode === 'dark' ? { backgroundColor: "#222222" } : {}}
     >
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/">Attendance Tracker</Link>
+        <Link className="navbar-brand" to="/">Presenze</Link>
         <button
           className="navbar-toggler"
           type="button"
