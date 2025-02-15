@@ -1,5 +1,6 @@
 [build]
   functions = "netlify/functions"
+  command = "npm install --prefix backend && npm run build --prefix backend"
 
 [dev]
   command = "npm start"
