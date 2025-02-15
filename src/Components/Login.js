@@ -15,9 +15,10 @@ const Login = ({ mode, showalert }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Using API Base URL:", API_BASE_URL);
+
     try {
       const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://presenze-plum.netlify.app/.netlify/functions/server";
-      console.log("Using API Base URL:", API_BASE_URL);
 
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
