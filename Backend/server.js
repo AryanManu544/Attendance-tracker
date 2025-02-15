@@ -20,8 +20,6 @@ app.use(
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/attendance", require("./routes/attendance"));
 
-const mongoose = require("mongoose");
-
 const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/";
 let isConnected = false; 
 
