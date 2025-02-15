@@ -20,7 +20,7 @@ app.use(
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/attendance", require("./routes/attendance"));
 
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/";
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/Attendance_tracker?retryWrites=true&w=majority";
 let isConnected = false; 
 
 const connectToMongo = async () => {
