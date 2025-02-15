@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import serverless from "serverless-http";
-import authRoutes from "../../backend/routes/auth.js";
-import attendanceRoutes from "../../backend/routes/attendance.js";
+import authRoutes from "./backend/routes/auth.js";
+import attendanceRoutes from "./backend/routes/attendance.js";
 
 const app = express();
 
