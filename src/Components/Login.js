@@ -6,6 +6,7 @@ const Login = ({ mode, showalert }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Hello, React!");
     document.body.setAttribute("data-theme", mode);
   }, [mode]);
 
