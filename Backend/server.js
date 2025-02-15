@@ -40,7 +40,6 @@ const connectToMongo = async () => {
   }
 };
 
-
 connectToMongo();
 
 module.exports = app; // Export app for Vercel
