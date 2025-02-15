@@ -20,22 +20,26 @@ app.use(
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/attendance", require("./routes/attendance"));
 
-// Connect to MongoDB
-const mongoURI = process.env.MONGO_URI;
+const mongoose = require("mongoose");
+
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/";
+let isConnected = false; 
 
 const connectToMongo = async () => {
+  if (isConnected) return;
+  
   try {
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+    isConnected = true;
     console.log("MongoDB connected");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
   }
 };
 
-// Ensure the database connects before handling requests
 connectToMongo();
 
 module.exports = app; // Export app for Vercel
