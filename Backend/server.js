@@ -24,19 +24,19 @@ const mongoURI = process.env.MONGO_URI || "mongodb+srv://aryanmanu544:ary1nay2@a
 let isConnected = false; 
 
 const connectToMongo = async () => {
-  if (isConnected) return;
-  
+  if (isConnected) {
+    console.log("MongoDB already connected.");
+    return;
+  }
   try {
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI); 
     isConnected = true;
-    console.log("MongoDB connected");
+    console.log("MongoDB connected.");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
   }
 };
+
 
 connectToMongo();
 
