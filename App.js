@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./Components/Navbar";
-import ViewAttendance from "./Components/ViewAttendance";
-import MarkAttendance from "./Components/MarkAttendance";
-import Login from "./Login";
-import Signup from "./Signup";
-import PrivateRoute from "./Privateroute";
+import Navbar from "./Frontend/Components/Navbar";
+import ViewAttendance from "./Frontend/Components/ViewAttendance";
+import MarkAttendance from "./Frontend/Components/MarkAttendance";
+import Login from "./Frontend/Components/Login";
+import Signup from "./Frontend/Components/Signup";
+import PrivateRoute from "./src/Privateroute";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
