@@ -1,18 +1,17 @@
-// src/Components/ViewAttendance.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AttendancePieCharts from './AttendancePieCharts';
 import EditAttendanceModal from './EditAttendanceModal';
 
-const ViewAttendance = (props) => {
+const ViewAttendance = ({mode, showalert,props}) => {
   const [records, setRecords] = useState([]);
   const [error, setError] = useState('');
   // State to control modal visibility and hold the selected record
   const [showModal, setShowModal] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
-  const { mode, showalert } = props;
+  // State to toggle raw records visibility
+  const [showRawRecords, setShowRawRecords] = useState(true);
 
-  // Fetch attendance records on component mount
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -54,11 +53,9 @@ const ViewAttendance = (props) => {
       setRecords(records.map(r => r._id === updatedRecord._id ? response.data : r));
     } catch (err) {
       console.error(err);
-      showalert("Error updating record", "danger");
     }
   };
-
-  // Handler to delete an attendance record
+  // Handler to delete records
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -67,56 +64,72 @@ const ViewAttendance = (props) => {
       });
       // Update local state by removing the deleted record
       setRecords(records.filter(r => r._id !== id));
-      showalert("Deleted successfully", "success");
+      //showalert("Deleted successfully", "success");
     } catch (err) {
       console.error(err);
-      showalert("Error deleting record", "danger");
+     //showalert("Error deleting record", "danger");
     }
   };
 
+  // Handler to toggle raw records display
+  const toggleRawRecords = () => {
+    setShowRawRecords(!showRawRecords);
+  };
+
+  // Dark mode classes: adjust container and list item classes based on the mode prop
+  const containerClass = mode === "dark" ? "bg-dark text-light" : "bd-light text-dark";
+  const listItemClass = mode === "dark" ? "list-group-item bg-dark text-light" : "list-group-item";
+
   return (
-    <div>
+    <div className={containerClass}>
       <h2>Attendance Records</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       
-      <ul className="list-group">
-        {records.map(record => (
-          <li key={record._id} className="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>Subject:</strong> {record.className} <br />
-              <strong>Date:</strong> {new Date(record.date).toLocaleDateString()} <br />
-              <strong>Status:</strong> {record.status}
-            </div>
-            <div>
-              {/* Edit Icon */}
-              <i 
-                className="fa-regular fa-pen-to-square mx-2"
-                style={{ cursor: "pointer" }}
-                onClick={() => handleEditClick(record)}>
-              </i>
-              {/* Delete Icon */}
-              <i 
+      {/* Button to toggle raw records display */}
+      <button className="btn btn-outline-info mb-3" onClick={toggleRawRecords}>
+        {showRawRecords ? "Hide Raw Records" : "Show Raw Records"}
+      </button>
+      
+      {showRawRecords && (
+        <ul className="list-group mb-3">
+          {records.map(record => (
+            <li key={record._id} className={`d-flex justify-content-between align-items-center ${listItemClass}`}>
+              <div>
+                <strong>Subject:</strong> {record.className} <br />
+                <strong>Date:</strong> {new Date(record.date).toLocaleDateString()} <br />
+                <strong>Status:</strong> {record.status}
+              </div>
+              <div>
+                <i
+                  className="fa-regular fa-pen-to-square mx-2"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleEditClick(record)}>
+                </i>
+                <i 
                 className="fa-solid fa-trash-can my-1 mx-2"
-                style={{ cursor: "pointer", color: "black" }}
+                style={{ cursor: "pointer", color: mode === 'dark' ? 'white' : 'black' }}
                 onClick={() => handleDelete(record._id)}>
-              </i>
-            </div>
-          </li>
-        ))}
-      </ul>
+                </i>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
       
       <hr />
       <h3>Attendance Summary (by Subject)</h3>
-      <AttendancePieCharts attendanceRecords={records} />
+      <AttendancePieCharts attendanceRecords={records} mode={mode} />
 
       {/* Edit Modal */}
       {selectedAttendance && (
         <EditAttendanceModal
-          show={showModal}
-          handleClose={handleModalClose}
-          attendanceRecord={selectedAttendance}
-          onSave={handleSaveChanges}
-        />
+        show={showModal}
+        color={mode === 'dark' ? 'white' : 'black'}
+        handleClose={handleModalClose}
+        attendanceRecord={selectedAttendance}
+        onSave={handleSaveChanges}          
+        mode={mode}
+      />      
       )}
     </div>
   );

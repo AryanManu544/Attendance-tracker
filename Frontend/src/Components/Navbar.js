@@ -1,19 +1,21 @@
+// src/Components/Navbar.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const Navbar = ({ mode, showalert }) => {
+const Navbar = ({ mode, showalert, toggleMode }) => {
   const navigate = useNavigate();
 
   const handleSignout = () => {
-    // Remove the token from localStorage
     localStorage.removeItem("token");
     showalert("Signed out successfully", "success");
-    // Redirect to the login page
     navigate("/login");
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+    <nav
+      className={`navbar navbar-expand-lg ${mode === 'dark' ? 'navbar-dark' : 'navbar-light bg-light'}`}
+      style={mode === 'dark' ? { backgroundColor: "#222222" } : {}}
+    >
       <div className="container-fluid">
         <Link className="navbar-brand" to="/">Attendance Tracker</Link>
         <button
@@ -23,11 +25,11 @@ const Navbar = ({ mode, showalert }) => {
           data-bs-target="#navbarContent"
           aria-controls="navbarContent"
           aria-expanded="false"
-          aria-label="Toggle navigation">
+          aria-label="Toggle navigation"
+        >
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarContent">
-          {/* Left side menu items */}
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <Link className="nav-link" to="/">View Attendance</Link>
@@ -36,8 +38,28 @@ const Navbar = ({ mode, showalert }) => {
               <Link className="nav-link" to="/mark">Mark Attendance</Link>
             </li>
           </ul>
-          {/* Right side buttons */}
-          <div className="d-flex ms-auto">
+          <div className="d-flex align-items-center">
+            {/* Dark mode toggle switch with icon */}
+            <div className="form-check form-switch me-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="darkModeSwitch"
+                onChange={toggleMode}
+                checked={mode === 'dark'}
+              />
+              <label
+                className="form-check-label"
+                htmlFor="darkModeSwitch"
+                style={{ color: mode === 'dark' ? 'white' : 'black' }}
+              >
+                {mode === 'dark' ? (
+                  <i className="fa-solid fa-moon"></i>
+                ) : (
+                  <i className="fa-solid fa-sun"></i>
+                )}
+              </label>
+            </div>
             {!localStorage.getItem("token") ? (
               <>
                 <Link className="btn btn-outline-primary me-2" to="/login">Login</Link>
