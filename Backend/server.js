@@ -52,8 +52,12 @@ const timeout = (ms) => (req, res, next) => {
 app.use(timeout(9000));
 
 // Routes
-app.use("/api/auth", require("../routes/auth"));
-app.use("/api/attendance", require("../routes/attendance"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/attendance", require("./routes/attendance"));
 
-// Export as Netlify Function
-module.exports.handler = serverless(app);
+if (process.env.NETLIFY) {
+  module.exports.handler = serverless(app);
+} else {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}

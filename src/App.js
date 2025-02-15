@@ -36,7 +36,7 @@ const App = () => {
   }, [mode]);
 
   return (
-    <Router basename="/">
+    <Router>
       <Navbar mode={mode} showalert={showAlert} toggleMode={toggleMode} />
       <div className="container mt-4">
         {alert && (
