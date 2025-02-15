@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import '../custom.css';
+import "../custom.css";
 
 const MarkAttendance = ({ mode, showalert }) => {
   const [formData, setFormData] = useState({ className: "", status: "present" });
@@ -29,7 +29,10 @@ const MarkAttendance = ({ mode, showalert }) => {
   };
 
   return (
-    <div className={`container ${mode === 'dark' ? 'bg-dark text-light' : ''}`} style={{ maxWidth: "500px", margin: "4rem auto", padding: "1rem", borderRadius: "8px" }}>
+    <div
+      className={`container ${mode === 'dark' ? 'bg-dark text-light' : ''}`}
+      style={{ maxWidth: "500px", margin: "4rem auto", padding: "1rem", borderRadius: "8px" }}
+    >
       <h2 className="text-center">Mark Attendance</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
@@ -63,7 +66,8 @@ const MarkAttendance = ({ mode, showalert }) => {
             style={
               mode === 'dark'
                 ? { backgroundColor: "#222222", color: "white", borderColor: "#444" }
-                : {}}
+                : {}
+            }
           >
             <option value="present">Present</option>
             <option value="absent">Absent</option>

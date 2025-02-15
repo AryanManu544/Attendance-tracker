@@ -1,11 +1,7 @@
-/* For light mode, the default placeholder color is typically black.
-   If needed, you can define it explicitly: */
-   .light-placeholder::placeholder {
-    color: black;
-  }
-  
-  /* For dark mode, override the placeholder color to white */
-  .dark-placeholder::placeholder {
-    color: white;
-  }
-  
+.form-control.dark-placeholder::placeholder {
+  color: white !important;
+}
+
+.form-control.light-placeholder::placeholder {
+  color: black !important;
+}

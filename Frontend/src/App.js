@@ -8,36 +8,48 @@ import Signup from "./Signup";
 import PrivateRoute from "./Privateroute";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const App = () => {
   const [mode, setMode] = useState("light");
-  const showalert = (msg, type) => alert(`${type}: ${msg}`);
+  const [alert, setAlert] = useState(null);
 
   const toggleMode = () => {
     setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
   };
 
-  // Whenever mode changes, update <body> classes so the entire page is dark or light
+  // If you want to display Bootstrap alerts, define showAlert like so:
+  const showAlert = (msg, type) => {
+    setAlert({ msg, type });
+    setTimeout(() => setAlert(null), 3000);
+  };
+
+  // Whenever mode changes, set the body background
   useEffect(() => {
     if (mode === "dark") {
-      document.body.classList.add("bg-dark", "text-light");
+      document.body.style.backgroundColor = "#222222";
+      document.body.style.color = "#ffffff";
     } else {
-      document.body.classList.remove("bg-dark", "text-light");
+      document.body.style.backgroundColor = "#ffffff";
+      document.body.style.color = "#000000";
     }
   }, [mode]);
 
   return (
     <Router>
-      <Navbar mode={mode} showalert={showalert} toggleMode={toggleMode} />
+      <Navbar mode={mode} showalert={showAlert} toggleMode={toggleMode} />
       <div className="container mt-4">
+        {alert && (
+          <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
+            {alert.msg}
+            <button type="button" className="btn-close" onClick={() => setAlert(null)} aria-label="Close"></button>
+          </div>
+        )}
         <Routes>
-          {/* Protected routes */}
           <Route
             path="/"
             element={
               <PrivateRoute>
-                <ViewAttendance mode={mode} showalert={showalert} />
+                <ViewAttendance mode={mode} showalert={showAlert} />
               </PrivateRoute>
             }
           />
@@ -45,13 +57,12 @@ const App = () => {
             path="/mark"
             element={
               <PrivateRoute>
-                <MarkAttendance mode={mode} showalert={showalert} />
+                <MarkAttendance mode={mode} showalert={showAlert} />
               </PrivateRoute>
             }
           />
-          {/* Public routes */}
-          <Route path="/login" element={<Login mode={mode} showalert={showalert} />} />
-          <Route path="/signup" element={<Signup mode={mode} showalert={showalert} />} />
+          <Route path="/login" element={<Login mode={mode} showalert={showAlert} />} />
+          <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} />} />
         </Routes>
       </div>
     </Router>
