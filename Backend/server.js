@@ -30,9 +30,8 @@ const connectToMongo = async () => {
   }
   try {
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 5000, 
-      socketTimeoutMS: 45000, 
-      keepAlive: true, 
+      serverSelectionTimeoutMS: 5000, // Keep for quick failure if no connection
+      socketTimeoutMS: 45000, // Optional, controls socket timeout
     });
     isConnected = true;
     console.log("MongoDB connected.");
