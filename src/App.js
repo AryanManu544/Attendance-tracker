@@ -8,6 +8,7 @@ import Signup from "./Components/Signup";
 import PrivateRoute from "./Privateroute";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -64,6 +65,7 @@ const App = () => {
           <Route path="/login" element={<Login mode={mode} showalert={showAlert} />} />
           <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} />} />
         </Routes>
+        <Analytics />
       </div>
     </Router>
   );
