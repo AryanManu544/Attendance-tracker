@@ -11,7 +11,9 @@ const StudentAttendanceTracker = () => {
     e.preventDefault();
     setError('');
     try {
-      const res = await axios.get(`http://localhost:5000/attendance?studentName=${encodeURIComponent(studentName)}`);
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
+      const res = await axios.get(`${API_BASE_URL}/api/attendance?studentName=${encodeURIComponent(studentName)}`);
+      
       const records = res.data;
       
       // Group records by className

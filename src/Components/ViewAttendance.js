@@ -15,8 +15,9 @@ const ViewAttendance = ({mode, showalert,props}) => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:4000/api/attendance/view", {
+        const response = await axios.get(`${API_BASE_URL}/api/attendance/view`, {
           headers: { "auth-token": token }
         });
         setRecords(response.data);
@@ -45,7 +46,7 @@ const ViewAttendance = ({mode, showalert,props}) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `http://localhost:4000/api/attendance/edit/${updatedRecord._id}`,
+        `${API_BASE_URL}/api/attendance/edit/${updatedRecord._id}`,
         updatedRecord,
         { headers: { "auth-token": token } }
       );
@@ -59,7 +60,7 @@ const ViewAttendance = ({mode, showalert,props}) => {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/api/attendance/delete/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/attendance/delete/${id}`, {
         headers: { "auth-token": token }
       });
       // Update local state by removing the deleted record

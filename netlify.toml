@@ -2,5 +2,10 @@
   functions = "netlify/functions"
 
 [dev]
-  command = "npm run build"
-  publish = "build"
+  command = "npm start"
+  port = 3000
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/serverless_backend"
+  status = 200

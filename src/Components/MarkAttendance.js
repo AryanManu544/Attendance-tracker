@@ -13,8 +13,9 @@ const MarkAttendance = ({ mode, showalert }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
       const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:4000/api/attendance/mark", formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/attendance/mark`, formData, {
         headers: { "auth-token": token },
       });
       if (response.data) {

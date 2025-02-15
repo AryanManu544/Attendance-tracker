@@ -20,8 +20,9 @@ const Signup = ({ mode, showalert }) => {
       return;
     }
     try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
       const { name, email, password } = credentials;
-      const response = await fetch("http://localhost:4000/api/auth/createuser", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/createuser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
