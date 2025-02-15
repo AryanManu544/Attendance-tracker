@@ -21,8 +21,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/attendance", require("./routes/attendance"));
 
 // Connect to MongoDB
-const mongoURI =
-  "mongodb+srv://aryanmanu544:ary1nay2@aryanmanu.pvkla.mongodb.net/Attendance_tracker";
+const mongoURI = process.env.MONGO_URI;
 
 const connectToMongo = async () => {
   try {
