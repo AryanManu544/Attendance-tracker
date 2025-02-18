@@ -7,6 +7,29 @@ const Signup = ({ mode, showalert }) => {
 
   useEffect(() => {
     document.body.setAttribute("data-theme", mode);
+
+    // Set background image on the body
+    const backgroundImage =
+      mode === "dark"
+        ? "/assets/darkmode.jpg"
+        : "/assets/lightmode.jpg";
+
+    document.body.style.backgroundImage = `url(${backgroundImage})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.height = "100vh"; 
+    document.body.style.margin = "0"; 
+
+    return () => {
+      // Clean up styles on component unmount
+      document.body.style.backgroundImage = "";
+      document.body.style.backgroundSize = "";
+      document.body.style.backgroundPosition = "";
+      document.body.style.backgroundRepeat = "";
+      document.body.style.height = "";
+      document.body.style.margin = "";
+    };
   }, [mode]);
 
   const onChange = (e) => {
@@ -42,7 +65,20 @@ const Signup = ({ mode, showalert }) => {
   };
 
   return (
-    <div className={`container ${mode === 'dark' ? 'bg-dark text-light' : ''}`} style={{ maxWidth: "400px", margin: "4rem auto", padding: "1rem", borderRadius: "8px" }}>
+    <div
+      className={`container ${mode === 'dark' ? 'text-light' : ''}`}
+      style={{
+        maxWidth: "400px",
+        margin: "4rem auto",
+        padding: "1rem",
+        borderRadius: "8px",
+        backgroundColor: mode === 'dark' ? "#222222cc" : "#ffffffcc", // Semi-transparent card
+        boxShadow:
+          mode === 'dark'
+            ? "0px 4px 10px rgba(0,0,0,0.8)"
+            : "0px 4px 10px rgba(0,0,0,0.2)",
+      }}
+    >
       <h2 className="text-center">Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
