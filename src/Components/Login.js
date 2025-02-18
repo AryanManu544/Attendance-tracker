@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import darkModeImage from "./assets/images/darkmode.jpg";
-import lightModeImage from "./assets/images/lightmode.jpg";
+import darkModeImage from "../assets/darkmode.jpg";
+import lightModeImage from "../assets/lightmode.jpg";
 
 const Login = ({ mode, showalert }) => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
