@@ -61,6 +61,9 @@ const Navbar = ({ mode, showalert, toggleMode }) => {
                 Mark Attendance
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/timetable">Timetable</Link>
+            </li>
           </ul>
           <div className="d-flex align-items-center">
             {/* Dark mode toggle switch with icon */}
