@@ -5,28 +5,28 @@ const Timetable = ({ mode, showalert }) => {
   // Timetable data based on the provided image
   const timetable = {
     Monday: [
-      { time: "9:00 - 9:50", subject: "CO102 (Lab)"},
-      { time: "10:00 - 10:50", subject: "MC106"},
-      { time: "11:00 - 11:50", subject: "MC106"},
-      { time: "2:00 - 2:50", subject: "MC104"},
-      { time: "3:00 - 3:50", subject: "MC104"},
+      { time: "9:00 - 9:50", subject: "CO102 (Lab)" },
+      { time: "10:00 - 10:50", subject: "MC106" },
+      { time: "11:00 - 11:50", subject: "MC106" },
+      { time: "2:00 - 2:50", subject: "MC104" },
+      { time: "3:00 - 3:50", subject: "MC104" },
     ],
     Tuesday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC"},
-      { time: "11:00 - 11:50", subject: "MC106"},
-      { time: "2:00 - 2:50", subject: "CO102"},
+      { time: "9:00 - 9:50", subject: "AEC/VAC" },
+      { time: "11:00 - 11:50", subject: "MC106" },
+      { time: "2:00 - 2:50", subject: "CO102" },
     ],
     Wednesday: [
-      { time: "10:00 - 10:50", subject: "MC106"},
-      { time: "12:00 - 12:50", subject: "MC102"},
+      { time: "10:00 - 10:50", subject: "MC106" },
+      { time: "12:00 - 12:50", subject: "MC102" },
     ],
     Thursday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC"},
-      { time: "11:00 - 11:50", subject: "MC106 (Lab)"},
+      { time: "9:00 - 9:50", subject: "AEC/VAC" },
+      { time: "11:00 - 11:50", subject: "MC106 (Lab)" },
     ],
     Friday: [
-      { time: "9:00 - 9:50", subject: "MC106 (Lab)"},
-      { time: "2:00 - 2:50", subject: "CO102"},
+      { time: "9:00 - 9:50", subject: "MC106 (Lab)" },
+      { time: "2:00 - 2:50", subject: "CO102" },
     ],
   };
 
@@ -37,22 +37,48 @@ const Timetable = ({ mode, showalert }) => {
   // State to track attendance
   const [attendance, setAttendance] = useState({});
 
-  // Load attendance from localStorage on mount
+  // Fetch attendance data for the logged-in user
   useEffect(() => {
-    const savedAttendance = JSON.parse(localStorage.getItem("attendance")) || {};
-    setAttendance(savedAttendance);
-  }, []);
+    const fetchAttendance = async () => {
+      try {
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
+        const token = localStorage.getItem("token");
 
-  // Save attendance to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("attendance", JSON.stringify(attendance));
-  }, [attendance]);
+        if (!token) {
+          showalert("You must be logged in to view attendance.", "danger");
+          return;
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/api/attendance/view`, {
+          headers: { 'auth-token': token },
+        });
+
+        // Map attendance data to a state object
+        const userAttendance = {};
+        response.data.forEach((record) => {
+          userAttendance[record.className] = true;
+        });
+
+        setAttendance(userAttendance);
+      } catch (error) {
+        console.error("Error fetching attendance:", error);
+        showalert("Error fetching attendance.", "danger");
+      }
+    };
+
+    fetchAttendance();
+  }, [showalert]);
 
   // Mark attendance for a class
   const markAttendance = async (classInfo) => {
     try {
       const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        showalert("You must be logged in to mark attendance.", "danger");
+        return;
+      }
 
       // Send request to backend to mark attendance
       const response = await axios.post(
@@ -63,14 +89,19 @@ const Timetable = ({ mode, showalert }) => {
         },
         {
           headers:{'auth-token':token},
-        });
-        if(response.data){
-            showalert("Attendance marked successfully","success")
-            setAttendance((prev)=>({...prev,[classInfo.time]:true}));
         }
+      );
+
+      if (response.data) {
+        showalert("Attendance marked successfully", "success");
+        setAttendance((prev) => ({
+          ...prev,
+          [`${classInfo.subject} (${classInfo.time})`]: true,
+        }));
+      }
     } catch (error) {
       console.error("Error marking attendance:", error);
-      showalert("Error marking attendance","danger");
+      showalert("Error marking attendance.", "danger");
     }
   };
 
@@ -109,14 +140,14 @@ const Timetable = ({ mode, showalert }) => {
               }}
             >
               <div>
-                <strong>{classInfo.time}</strong> - {classInfo.subject} ({classInfo.location})
+                <strong>{classInfo.time}</strong> - {classInfo.subject}
               </div>
               <button
                 className="btn btn-outline-success"
                 onClick={() => markAttendance(classInfo)}
-                disabled={attendance[classInfo.time]} // Disable button if already marked
+                disabled={attendance[`${classInfo.subject} (${classInfo.time})`]} // Disable button if already marked
               >
-                {attendance[classInfo.time] ? 'Marked' : 'Mark Attendance'}
+                {attendance[`${classInfo.subject} (${classInfo.time})`] ? 'Marked' : 'Mark Attendance'}
               </button>
             </li>
           ))}
