@@ -20,20 +20,20 @@ const App = () => {
     setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
   };
 
-  // If you want to display Bootstrap alerts, define showAlert like so:
   const showAlert = (msg, type) => {
     setAlert({ msg, type });
     setTimeout(() => setAlert(null), 3000);
   };
 
-  // Whenever mode changes, set the body background
   useEffect(() => {
     if (mode === "dark") {
-      document.body.style.backgroundColor = "#222222";
-      document.body.style.color = "#ffffff";
+      document.body.style.backgroundImage = `url("/assets/darkmode.jpg")`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
     } else {
-      document.body.style.backgroundColor = "#ffffff";
-      document.body.style.color = "#000000";
+      document.body.style.backgroundImage = `url("/assets/lightmode.jpg")`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
     }
   }, [mode]);
 
@@ -52,7 +52,7 @@ const App = () => {
             path="/"
             element={
               <PrivateRoute>
-                <ViewAttendance mode={mode} showalert={showAlert} />
+                <ViewAttendance mode={mode} showalert={showAlert} toggleMode={toggleMode}/>
               </PrivateRoute>
             }
           />
@@ -60,13 +60,13 @@ const App = () => {
             path="/mark"
             element={
               <PrivateRoute>
-                <MarkAttendance mode={mode} showalert={showAlert} />
+                <MarkAttendance mode={mode} showalert={showAlert} toggleMode={toggleMode}/>
               </PrivateRoute>
             }
           />
-          <Route path="/login" element={<Login mode={mode} showalert={showAlert} />} />
-          <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} />} />
-          <Route path="/timetable" element={<Timetable mode={mode} showalert={showAlert}/>} />
+          <Route path="/login" element={<Login mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
+          <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
+          <Route path="/timetable" element={<Timetable mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
         </Routes>
         <Analytics />
       </div>

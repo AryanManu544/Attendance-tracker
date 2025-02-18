@@ -2,101 +2,113 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const Timetable = ({ mode, showalert }) => {
-  // Timetable data based on your provided image
-  const timetable = {
-    Monday: [
-      { time: "9:00 - 9:50", subject: "CO102 (Lab)" },
-      { time: "10:00 - 10:50", subject: "MC106" },
-      { time: "11:00 - 11:50", subject: "MC106" },
-      { time: "2:00 - 2:50", subject: "MC104" },
-      { time: "3:00 - 3:50", subject: "MC104" },
-    ],
-    Tuesday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC" },
-      { time: "11:00 - 11:50", subject: "MC106" },
-      { time: "2:00 - 2:50", subject: "CO102" },
-    ],
-    Wednesday: [
-      { time: "10:00 - 10:50", subject: "MC106" },
-      { time: "12:00 - 12:50", subject: "MC102" },
-    ],
-    Thursday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC" },
-      { time: "11:00 - 11:50", subject: "MC106 (Lab)" },
-    ],
-    Friday: [
-      { time: "9:00 - 9:50", subject: "MC106 (Lab)" },
-      { time: "2:00 - 2:50", subject:"CO102"},
-    ],
-  };
-
-  // Get today's day
-  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
   const today = daysOfWeek[new Date().getDay()];
 
-  // State to track attendance for the logged-in user
+  // State to hold timetable entries fetched from backend
+  const [timetableEntries, setTimetableEntries] = useState([]);
+  // State for new entry form
+  const [newEntry, setNewEntry] = useState({
+    day: "Monday",
+    time: "",
+    subject: "",
+  });
+  // State to track attendance
   const [attendance, setAttendance] = useState({});
 
-  // Fetch attendance data for the logged-in user
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
-        const token = localStorage.getItem("token");
+  // Use your backend URL deployed on Render
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://your-backend-url.com";
 
+  // Fetch timetable entries for the logged-in user from the backend
+  useEffect(() => {
+    const fetchTimetableEntries = async () => {
+      try {
+        const token = localStorage.getItem("token");
         if (!token) {
-          showalert("You must be logged in to view attendance.", "danger");
+          showalert("You must be logged in to view the timetable.", "danger");
           return;
         }
-
-        const response = await axios.get(`${API_BASE_URL}/api/attendance/view`, {
-          headers: { 'auth-token': token },
+        const response = await axios.get(`${API_BASE_URL}/api/timetable`, {
+          headers: { "auth-token": token },
         });
-
-        // Map attendance data to a state object
-        const userAttendance = {};
-        response.data.forEach((record) => {
-          userAttendance[record.className] = true;
-        });
-
-        setAttendance(userAttendance);
+        setTimetableEntries(response.data);
       } catch (error) {
-        console.error("Error fetching attendance:", error);
-        showalert("Error fetching attendance.", "danger");
+        console.error("Error fetching timetable entries:", error);
+        showalert("Error fetching timetable entries.", "danger");
       }
     };
 
-    fetchAttendance();
-  }, [showalert]);
+    fetchTimetableEntries();
+  }, [API_BASE_URL, showalert]);
 
-  // Mark attendance for a class
-  const markAttendance = async (classInfo) => {
+  // Handler for input changes in the form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewEntry((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Submit the new timetable entry to the backend
+  const handleAddEntry = async (e) => {
+    e.preventDefault();
+    if (!newEntry.time || !newEntry.subject) {
+      showalert("Please fill in all fields.", "danger");
+      return;
+    }
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
       const token = localStorage.getItem("token");
+      if (!token) {
+        showalert("You must be logged in to add an entry.", "danger");
+        return;
+      }
+      const response = await axios.post(
+        `${API_BASE_URL}/api/timetable`,
+        newEntry,
+        { headers: { "auth-token": token } }
+      );
+      // Update state with the new entry
+      setTimetableEntries((prev) => [...prev, response.data]);
+      setNewEntry({ day: "Monday", time: "", subject: "" });
+      showalert("Timetable entry added successfully!", "success");
+    } catch (error) {
+      console.error("Error adding timetable entry:", error);
+      showalert("Error adding timetable entry.", "danger");
+    }
+  };
 
+  // Filter and display only today's events
+  const todaysEntries = timetableEntries.filter(
+    (entry) => entry.day === today
+  );
+
+  // Mark attendance for an entry (only subject is stored for attendance)
+  const markAttendance = async (entry) => {
+    try {
+      const token = localStorage.getItem("token");
       if (!token) {
         showalert("You must be logged in to mark attendance.", "danger");
         return;
       }
-
-      // Send request to backend to mark attendance
       const response = await axios.post(
         `${API_BASE_URL}/api/attendance/mark`,
         {
-          className:`${classInfo.subject} (${classInfo.time})`,
-          status:"present",
+          className: entry.subject, // Only the subject is stored
+          status: "present",
         },
-        {
-          headers:{'auth-token':token},
-        }
+        { headers: { "auth-token": token } }
       );
-
       if (response.data) {
-        showalert("Attendance marked successfully", "success");
+        showalert("Attendance marked successfully!", "success");
         setAttendance((prev) => ({
           ...prev,
-          [`${classInfo.subject} (${classInfo.time})`]: true,
+          [entry.subject]: true,
         }));
       }
     } catch (error) {
@@ -107,47 +119,91 @@ const Timetable = ({ mode, showalert }) => {
 
   return (
     <div
-      className={`container ${mode === 'dark' ? 'text-light' : ''}`}
+      className={`container ${mode === "dark" ? "text-light" : ""}`}
       style={{
-        marginTop:"4rem",
-        padding:"2rem",
-        backgroundColor:
-          mode === 'dark' ? '#222222' : '#ffffff',
-        borderRadius:"8px",
+        marginTop: "4rem",
+        padding: "2rem",
+        backgroundColor: mode === "dark" ? "#222222" : "#ffffff",
+        borderRadius: "8px",
         boxShadow:
-          mode === 'dark'
-            ? '0px 4px 10px rgba(0,0,0,0.8)'
-            : '0px 4px 10px rgba(0,0,0,0.2)',
+          mode === "dark"
+            ? "0px 4px 10px rgba(0,0,0,0.8)"
+            : "0px 4px 10px rgba(0,0,0,0.2)",
       }}
     >
-      <h2 className="text-center">Today's Classes ({today})</h2>
-      
-      {/* Check if there are classes for today */}
-      {timetable[today] && timetable[today].length > 0 ? (
+      <h2 className="text-center">Timetable</h2>
+
+      {/* Form to add a new timetable entry */}
+      <form onSubmit={handleAddEntry} className="mb-4">
+        <div className="row g-3">
+          <div className="col-md-3">
+            <select
+              name="day"
+              className="form-select"
+              value={newEntry.day}
+              onChange={handleInputChange}
+            >
+              {daysOfWeek.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-3">
+            <input
+              type="text"
+              name="time"
+              className="form-control"
+              placeholder="Time (e.g., 9:00 - 9:50)"
+              value={newEntry.time}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="col-md-4">
+            <input
+              type="text"
+              name="subject"
+              className="form-control"
+              placeholder="Class Name"
+              value={newEntry.subject}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="col-md-2">
+            <button type="submit" className="btn btn-primary w-100">
+              Add Entry
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {/* Display Today's Classes */}
+      <h3 className="text-center">Today's Classes ({today})</h3>
+      {todaysEntries.length > 0 ? (
         <ul className="list-group">
-          {timetable[today].map((classInfo, index) => (
+          {todaysEntries.map((entry, index) => (
             <li
               key={index}
               className={`list-group-item ${
-                mode === 'dark' ? 'bg-dark text-light' : ''
+                mode === "dark" ? "bg-dark text-light" : ""
               }`}
               style={{
-                display:"flex",
-                justifyContent:"space-between",
-                alignItems:"center",
-                borderColor:
-                  mode === 'dark' ? '#444444' : '#dddddd',
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderColor: mode === "dark" ? "#444444" : "#dddddd",
               }}
             >
               <div>
-                <strong>{classInfo.time}</strong> - {classInfo.subject}
+                <strong>{entry.time}</strong> - {entry.subject}
               </div>
               <button
                 className="btn btn-outline-success"
-                onClick={() => markAttendance(classInfo)}
-                disabled={attendance[`${classInfo.subject} (${classInfo.time})`]} // Disable button if already marked
+                onClick={() => markAttendance(entry)}
+                disabled={attendance[entry.subject]}
               >
-                {attendance[`${classInfo.subject} (${classInfo.time})`] ? 'Marked' : 'Mark Attendance'}
+                {attendance[entry.subject] ? "Marked" : "Mark Attendance"}
               </button>
             </li>
           ))}

@@ -40,7 +40,7 @@ const Login = ({ mode, showalert }) => {
     e.preventDefault();
     const API_BASE_URL =
       process.env.REACT_APP_API_BASE_URL ||
-      "https://presenze-plum.netlify.app/.netlify/functions/server";
+      "http://localhost:4000";
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
