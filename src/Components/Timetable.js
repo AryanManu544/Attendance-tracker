@@ -1,31 +1,32 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const Timetable = ({ mode }) => {
-  // Sample timetable data based on the provided image
+const Timetable = ({ mode, showalert }) => {
+  // Timetable data based on the provided image
   const timetable = {
     Monday: [
-      { time: "9:00 - 9:50", subject: "CO102 (Lab)", location: "AB-127 (G1)" },
-      { time: "10:00 - 10:50", subject: "MC106", location: "P6-G1" },
-      { time: "11:00 - 11:50", subject: "MC106", location: "P6-G1" },
-      { time: "2:00 - 2:50", subject: "MC104", location: "P6-F4" },
-      { time: "3:00 - 3:50", subject: "MC104", location: "P6-F4" },
+      { time: "9:00 - 9:50", subject: "CO102 (Lab)"},
+      { time: "10:00 - 10:50", subject: "MC106"},
+      { time: "11:00 - 11:50", subject: "MC106"},
+      { time: "2:00 - 2:50", subject: "MC104"},
+      { time: "3:00 - 3:50", subject: "MC104"},
     ],
     Tuesday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC", location: "P1-G2" },
-      { time: "11:00 - 11:50", subject: "MC106", location: "P6-G2" },
-      { time: "2:00 - 2:50", subject: "CO102", location: "P6-F4" },
+      { time: "9:00 - 9:50", subject: "AEC/VAC"},
+      { time: "11:00 - 11:50", subject: "MC106"},
+      { time: "2:00 - 2:50", subject: "CO102"},
     ],
     Wednesday: [
-      { time: "10:00 - 10:50", subject: "MC106", location: "P6-G2" },
-      { time: "12:00 - 12:50", subject: "MC102", location: "P6-F3" },
+      { time: "10:00 - 10:50", subject: "MC106"},
+      { time: "12:00 - 12:50", subject: "MC102"},
     ],
     Thursday: [
-      { time: "9:00 - 9:50", subject: "AEC/VAC", location: "P1-G2" },
-      { time: "11:00 - 11:50", subject: "MC106 (Lab)", location: "AB-127 (G1)" },
+      { time: "9:00 - 9:50", subject: "AEC/VAC"},
+      { time: "11:00 - 11:50", subject: "MC106 (Lab)"},
     ],
     Friday: [
-      { time: "9:00 - 9:50", subject: "MC106 (Lab)", location: "AB-127 (G1)" },
-      { time: "2:00 - 2:50", subject: "CO102", location: "P6-F4" },
+      { time: "9:00 - 9:50", subject: "MC106 (Lab)"},
+      { time: "2:00 - 2:50", subject: "CO102"},
     ],
   };
 
@@ -48,11 +49,29 @@ const Timetable = ({ mode }) => {
   }, [attendance]);
 
   // Mark attendance for a class
-  const markAttendance = (time) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [time]: true,
-    }));
+  const markAttendance = async (classInfo) => {
+    try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
+      const token = localStorage.getItem("token");
+
+      // Send request to backend to mark attendance
+      const response = await axios.post(
+        `${API_BASE_URL}/api/attendance/mark`,
+        {
+          className:`${classInfo.subject} (${classInfo.time})`,
+          status:"present",
+        },
+        {
+          headers:{'auth-token':token},
+        });
+        if(response.data){
+            showalert("Attendance marked successfully","success")
+            setAttendance((prev)=>({...prev,[classInfo.time]:true}));
+        }
+    } catch (error) {
+      console.error("Error marking attendance:", error);
+      showalert("Error marking attendance","danger");
+    }
   };
 
   return (
@@ -94,7 +113,7 @@ const Timetable = ({ mode }) => {
               </div>
               <button
                 className="btn btn-outline-success"
-                onClick={() => markAttendance(classInfo.time)}
+                onClick={() => markAttendance(classInfo)}
                 disabled={attendance[classInfo.time]} // Disable button if already marked
               >
                 {attendance[classInfo.time] ? 'Marked' : 'Mark Attendance'}
