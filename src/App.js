@@ -66,7 +66,7 @@ const App = () => {
           />
           <Route path="/login" element={<Login mode={mode} showalert={showAlert} />} />
           <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} />} />
-          <Route path="/timetable" element={<Timetable mode={mode} />} />
+          <Route path="/timetable" element={<Timetable mode={mode} showalert={showAlert}/>} />
         </Routes>
         <Analytics />
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const Timetable = ({ mode, showalert }) => {
-  // Timetable data based on the provided image
+  // Timetable data based on your provided image
   const timetable = {
     Monday: [
       { time: "9:00 - 9:50", subject: "CO102 (Lab)" },
@@ -26,7 +26,7 @@ const Timetable = ({ mode, showalert }) => {
     ],
     Friday: [
       { time: "9:00 - 9:50", subject: "MC106 (Lab)" },
-      { time: "2:00 - 2:50", subject: "CO102" },
+      { time: "2:00 - 2:50", subject:"CO102"},
     ],
   };
 
@@ -34,7 +34,7 @@ const Timetable = ({ mode, showalert }) => {
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const today = daysOfWeek[new Date().getDay()];
 
-  // State to track attendance
+  // State to track attendance for the logged-in user
   const [attendance, setAttendance] = useState({});
 
   // Fetch attendance data for the logged-in user
