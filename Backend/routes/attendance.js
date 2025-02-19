@@ -116,33 +116,34 @@ router.get("/view/:subject", fetchuser, async (req, res) => {
   }
 });
 
-// Mark attendance for multiple dates
 router.post("/mark-multiple", fetchuser, async (req, res) => {
   try {
     const { className, dates } = req.body;
 
-    const records = await Promise.all(
-      dates.map(async (date) => {
-        const existingRecord = await Attendance.findOne({
+    await Promise.all(
+      dates.map(async ({ date, status }) => {
+        let record = await Attendance.findOne({
           student: req.user.id,
           className,
           date,
         });
 
-        if (!existingRecord) {
-          const newRecord = new Attendance({
+        if (!record) {
+          record = new Attendance({
             student: req.user.id,
             className,
             date,
-            status: "present",
+            status,
           });
-          return await newRecord.save();
+          await record.save();
+        } else {
+          record.status = status; // Update existing record's status
+          await record.save();
         }
-        return existingRecord;
       })
     );
 
-    res.json(records);
+    res.json({ success: true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });

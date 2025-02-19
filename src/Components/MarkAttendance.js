@@ -2,33 +2,37 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const MarkMonthlyAttendance = ({ mode, showalert }) => {
-  const [subjects, setSubjects] = useState([]); 
-  const [selectedSubject, setSelectedSubject] = useState(""); 
-  const [dates, setDates] = useState([]); 
-  const [attendance, setAttendance] = useState({}); 
+  const [subjects, setSubjects] = useState([]); // List of subjects
+  const [selectedSubject, setSelectedSubject] = useState(""); // Selected subject
+  const [dates, setDates] = useState([]); // Dates of the selected subject
+  const [attendance, setAttendance] = useState({}); // Attendance state
+  const [timetable, setTimetable] = useState([]); // Timetable data
 
   const API_BASE_URL =
     process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
 
-  // Fetch subjects from timetable on mount
+  // Fetch timetable and subjects on mount
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchTimetable = async () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(`${API_BASE_URL}/api/timetable`, {
           headers: { "auth-token": token },
         });
+        setTimetable(response.data);
+
+        // Extract unique subjects from timetable
         const uniqueSubjects = [
           ...new Set(response.data.map((entry) => entry.subject)),
         ];
         setSubjects(uniqueSubjects);
       } catch (error) {
-        console.error("Error fetching subjects:", error);
-        showalert("Error fetching subjects.", "danger");
+        console.error("Error fetching timetable:", error);
+        showalert("Error fetching timetable.", "danger");
       }
     };
 
-    fetchSubjects();
+    fetchTimetable();
   }, [API_BASE_URL, showalert]);
 
   // Fetch dates for the selected subject
@@ -47,11 +51,17 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
         { headers: { "auth-token": token } }
       );
 
-      const markedDates = attendanceResponse.data.map((record) =>
-        new Date(record.date).toISOString().split("T")[0]
+      const markedDates = attendanceResponse.data.reduce((acc, record) => {
+        acc[record.date] = record.status; // Store status ("present" or "absent")
+        return acc;
+      }, {});
+
+      // Filter timetable entries for this subject
+      const subjectEntries = timetable.filter(
+        (entry) => entry.subject === subject
       );
 
-      // Generate all dates in the current month
+      // Generate all dates in the current month that match the schedule
       const currentMonthDates = [];
       const now = new Date();
       const year = now.getFullYear();
@@ -62,28 +72,35 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
         day <= new Date(year, month + 1, 0).getDate();
         day++
       ) {
-        currentMonthDates.push(
-          new Date(year, month, day).toISOString().split("T")[0]
-        );
+        const dateObj = new Date(year, month, day);
+        const dayOfWeek = dateObj.toLocaleString("en-US", { weekday: "long" });
+
+        // Check if this date matches any day in the timetable
+        if (subjectEntries.some((entry) => entry.day === dayOfWeek)) {
+          currentMonthDates.push({
+            date: dateObj.toISOString().split("T")[0],
+            status: markedDates[dateObj.toISOString().split("T")[0]] || null,
+          });
+        }
       }
 
-      setDates(
-        currentMonthDates.map((date) => ({
-          date,
-          marked: markedDates.includes(date),
-        }))
-      );
+      setDates(currentMonthDates);
     } catch (error) {
       console.error("Error fetching dates:", error);
       showalert("Error fetching dates.", "danger");
     }
   };
 
-  // Handle checkbox toggle
-  const handleCheckboxChange = (date) => {
+  // Toggle attendance status between "present", "absent", and null
+  const toggleStatus = (date) => {
     setAttendance((prev) => ({
       ...prev,
-      [date]: !prev[date],
+      [date]:
+        prev[date] === "present"
+          ? "absent"
+          : prev[date] === "absent"
+          ? null
+          : "present",
     }));
   };
 
@@ -91,9 +108,10 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const markedDates = Object.keys(attendance).filter(
-        (date) => attendance[date]
-      );
+      const markedDates = Object.keys(attendance).map((date) => ({
+        date,
+        status: attendance[date],
+      }));
 
       await axios.post(
         `${API_BASE_URL}/api/attendance/mark-multiple`,
@@ -150,14 +168,26 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
         <div>
           <h5>Mark Attendance</h5>
           <ul className="list-group">
-            {dates.map(({ date, marked }) => (
+            {dates.map(({ date, status }) => (
               <li key={date} className="list-group-item">
-                <input
-                  type="checkbox"
-                  checked={attendance[date] || marked}
-                  onChange={() => handleCheckboxChange(date)}
-                />
-                <label style={{ marginLeft: "10px" }}>{date}</label>
+                <span
+                  style={{
+                    cursor: "pointer",
+                    color:
+                      attendance[date] === "present" || status === "present"
+                        ? "green"
+                        : attendance[date] === "absent" || status === "absent"
+                        ? "red"
+                        : "",
+                  }}
+                  onClick={() => toggleStatus(date)}
+                >
+                  {attendance[date] === "present" || status === "present"
+                    ? `✅ ${date}`
+                    : attendance[date] === "absent" || status === "absent"
+                    ? `❌ ${date}`
+                    : `${date}`}
+                </span>
               </li>
             ))}
           </ul>
