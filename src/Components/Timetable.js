@@ -197,9 +197,8 @@ const Timetable = ({ mode, showalert }) => {
           {displayedEntries.map((entry) => (
             <li
               key={entry._id}
-              className={`list-group-item ${
-                mode === "dark" ? "bg-dark text-light" : ""
-              }`}
+              className={`list-group-item ${mode === "dark" ? "bg-dark text-light" : ""
+                }`}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -214,9 +213,10 @@ const Timetable = ({ mode, showalert }) => {
                 <i
                   className="fa-regular fa-pen-to-square mx-2"
                   style={{ cursor: "pointer" }}
-                  onClick={() => handleEditSubmit(entry)}>
-                </i>
-                <i 
+                  onClick={() => setEditEntry(entry)}
+                ></i>
+
+                <i
                   className="fa-solid fa-trash-can my-1 mx-2"
                   style={{ cursor: "pointer", color: mode === 'dark' ? 'white' : 'black' }}
                   onClick={() => handleDelete(entry._id)}>

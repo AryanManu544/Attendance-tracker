@@ -35,6 +35,64 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
     fetchTimetable();
   }, [API_BASE_URL, showalert]);
 
+  // Generate all dates in the current month that match the schedule
+  // Helper function to format a date as YYYY-MM-DD in local time
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Generate all dates in the current month that match the schedule
+  const generateDatesForSubject = (subjectEntries, markedDates) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const subjectDates = [];
+
+    // Iterate over each day of the week from timetable
+    subjectEntries.forEach((entry) => {
+      const dayOfWeek = entry.day; // e.g., "Wednesday"
+
+      // Find the first occurrence of this weekday in the current month
+      let firstDayOfMonth = new Date(year, month, 1);
+      while (firstDayOfMonth.getDay() !== getDayIndex(dayOfWeek)) {
+        firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1);
+      }
+
+      // Generate all occurrences of this weekday in the current month
+      for (
+        let date = new Date(firstDayOfMonth);
+        date.getMonth() === month;
+        date.setDate(date.getDate() + 7) // Add 7 days to get the next occurrence
+      ) {
+        const formattedDate = formatDate(date); // Use local date formatting
+        subjectDates.push({
+          date: formattedDate,
+          status: markedDates[formattedDate] || null, // Use status from markedDates or default to null
+        });
+      }
+    });
+
+    return subjectDates;
+  };
+
+  // Helper function to convert weekday name to index (e.g., "Sunday" -> 0)
+  const getDayIndex = (dayName) => {
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    return daysOfWeek.indexOf(dayName);
+  };
+
   // Fetch dates for the selected subject
   const handleSubjectChange = async (e) => {
     const subject = e.target.value;
@@ -51,8 +109,10 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
         { headers: { "auth-token": token } }
       );
 
+      // Map attendance records to a dictionary with ISO date keys
       const markedDates = attendanceResponse.data.reduce((acc, record) => {
-        acc[record.date] = record.status; // Store status ("present" or "absent")
+        const isoDate = new Date(record.date).toISOString().split("T")[0];
+        acc[isoDate] = record.status; // Store status ("present" or "absent")
         return acc;
       }, {});
 
@@ -61,30 +121,9 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
         (entry) => entry.subject === subject
       );
 
-      // Generate all dates in the current month that match the schedule
-      const currentMonthDates = [];
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-
-      for (
-        let day = 1;
-        day <= new Date(year, month + 1, 0).getDate();
-        day++
-      ) {
-        const dateObj = new Date(year, month, day);
-        const dayOfWeek = dateObj.toLocaleString("en-US", { weekday: "long" });
-
-        // Check if this date matches any day in the timetable
-        if (subjectEntries.some((entry) => entry.day === dayOfWeek)) {
-          currentMonthDates.push({
-            date: dateObj.toISOString().split("T")[0],
-            status: markedDates[dateObj.toISOString().split("T")[0]] || null,
-          });
-        }
-      }
-
-      setDates(currentMonthDates);
+      // Generate dates based on timetable and attendance records
+      const generatedDates = generateDatesForSubject(subjectEntries, markedDates);
+      setDates(generatedDates);
     } catch (error) {
       console.error("Error fetching dates:", error);
       showalert("Error fetching dates.", "danger");
@@ -169,24 +208,40 @@ const MarkMonthlyAttendance = ({ mode, showalert }) => {
           <h5>Mark Attendance</h5>
           <ul className="list-group">
             {dates.map(({ date, status }) => (
-              <li key={date} className="list-group-item">
-                <span
-                  style={{
-                    cursor: "pointer",
-                    color:
+              <li key={date} className="list-group-item d-flex justify-content-between align-items-center">
+                <span>{date}</span>
+                <span>
+                  {status === "present" && (
+                    <span style={{ color: "green", marginRight: "10px" }}>
+                      ✅ Present
+                    </span>
+                  )}
+                  {status === "absent" && (
+                    <span style={{ color: "red", marginRight: "10px" }}>
+                      ❌ Absent
+                    </span>
+                  )}
+                  {!status && (
+                    <span style={{ color: "#888", marginRight: "10px" }}>
+                      ⬜ Not Marked
+                    </span>
+                  )}
+                  <button
+                    className={`btn btn-sm ${
                       attendance[date] === "present" || status === "present"
-                        ? "green"
+                        ? "btn-success"
                         : attendance[date] === "absent" || status === "absent"
-                        ? "red"
-                        : "",
-                  }}
-                  onClick={() => toggleStatus(date)}
-                >
-                  {attendance[date] === "present" || status === "present"
-                    ? `✅ ${date}`
-                    : attendance[date] === "absent" || status === "absent"
-                    ? `❌ ${date}`
-                    : `${date}`}
+                        ? "btn-danger"
+                        : ""
+                    }`}
+                    onClick={() => toggleStatus(date)}
+                  >
+                    {attendance[date] === "present" || status === "present"
+                      ? `✅`
+                      : attendance[date] === "absent" || status === "absent"
+                      ? `❌`
+                      : `Mark`}
+                  </button>
                 </span>
               </li>
             ))}
