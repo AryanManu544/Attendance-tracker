@@ -10,8 +10,7 @@ const ViewAttendance = ({ mode, showalert }) => {
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [showRawRecords, setShowRawRecords] = useState(true);
 
-  // ✅ Define API_BASE_URL globally for consistent access
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://presenze-plum.netlify.app/.netlify/functions/server";
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -27,7 +26,7 @@ const ViewAttendance = ({ mode, showalert }) => {
       }
     };
     fetchAttendance();
-  }, [API_BASE_URL]); // ✅ Include API_BASE_URL in dependencies
+  }, [API_BASE_URL]);
 
   // Open Edit Modal
   const handleEditClick = (record) => {
@@ -41,7 +40,6 @@ const ViewAttendance = ({ mode, showalert }) => {
     setSelectedAttendance(null);
   };
 
-  // ✅ Save Updated Attendance
   const handleSaveChanges = async (updatedRecord) => {
     try {
       const token = localStorage.getItem("token");
@@ -56,7 +54,6 @@ const ViewAttendance = ({ mode, showalert }) => {
     }
   };
 
-  // ✅ Delete Attendance Record
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -69,12 +66,10 @@ const ViewAttendance = ({ mode, showalert }) => {
     }
   };
 
-  // Toggle Raw Records Display
   const toggleRawRecords = () => {
     setShowRawRecords(!showRawRecords);
   };
 
-  // Dark Mode Classes
   const containerClass = mode === "dark" ? "bg-dark text-light" : "bg-light text-dark";
   const listItemClass = mode === "dark" ? "list-group-item bg-dark text-light" : "list-group-item";
 

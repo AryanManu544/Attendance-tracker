@@ -32,4 +32,57 @@ router.get("/", fetchuser, async (req, res) => {
   }
 });
 
+// Update a timetable entry
+router.put("/:id", fetchuser, async (req, res) => {
+  try {
+    const { day, time, subject } = req.body;
+    const updatedEntry = {};
+
+    if (day) updatedEntry.day = day;
+    if (time) updatedEntry.time = time;
+    if (subject) updatedEntry.subject = subject;
+
+    let entry = await Timetable.findById(req.params.id);
+    if (!entry) {
+      return res.status(404).json({ error: "Timetable entry not found" });
+    }
+
+    // Ensure the logged-in user owns the timetable entry
+    if (entry.student.toString() !== req.user.id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    entry = await Timetable.findByIdAndUpdate(
+      req.params.id,
+      { $set: updatedEntry },
+      { new: true }
+    );
+    res.json(entry);
+  } catch (error) {
+    console.error("Error updating timetable entry:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Delete a timetable entry
+router.delete("/:id", fetchuser, async (req, res) => {
+  try {
+    let entry = await Timetable.findById(req.params.id);
+    if (!entry) {
+      return res.status(404).json({ error: "Timetable entry not found" });
+    }
+
+    // Ensure the logged-in user owns the timetable entry
+    if (entry.student.toString() !== req.user.id) {
+      return res.status(401).json({ error: "Not authorized" });
+    }
+
+    await Timetable.findByIdAndDelete(req.params.id);
+    res.json({ success: "Timetable entry deleted" });
+  } catch (error) {
+    console.error("Error deleting timetable entry:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;

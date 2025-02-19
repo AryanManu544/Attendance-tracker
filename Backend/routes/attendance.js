@@ -101,4 +101,52 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
   }
 });
 
+// Fetch attendance records for a specific subject
+router.get("/view/:subject", fetchuser, async (req, res) => {
+  try {
+    const { subject } = req.params;
+    const records = await Attendance.find({
+      student: req.user.id,
+      className: subject,
+    });
+    res.json(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Mark attendance for multiple dates
+router.post("/mark-multiple", fetchuser, async (req, res) => {
+  try {
+    const { className, dates } = req.body;
+
+    const records = await Promise.all(
+      dates.map(async (date) => {
+        const existingRecord = await Attendance.findOne({
+          student: req.user.id,
+          className,
+          date,
+        });
+
+        if (!existingRecord) {
+          const newRecord = new Attendance({
+            student: req.user.id,
+            className,
+            date,
+            status: "present",
+          });
+          return await newRecord.save();
+        }
+        return existingRecord;
+      })
+    );
+
+    res.json(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;

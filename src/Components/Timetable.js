@@ -13,29 +13,23 @@ const Timetable = ({ mode, showalert }) => {
   ];
   const today = daysOfWeek[new Date().getDay()];
 
-  // State to hold timetable entries fetched from backend
   const [timetableEntries, setTimetableEntries] = useState([]);
-  // State for new entry form
   const [newEntry, setNewEntry] = useState({
     day: "Monday",
     time: "",
     subject: "",
   });
-  // State to track attendance
-  const [attendance, setAttendance] = useState({});
+  const [editEntry, setEditEntry] = useState(null); // For editing an entry
+  const [viewAll, setViewAll] = useState(false); // Toggle between today's and all classes
 
-  // Use your backend URL deployed on Render
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://your-backend-url.com";
+  const API_BASE_URL =
+    process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
 
-  // Fetch timetable entries for the logged-in user from the backend
+  // Fetch timetable entries on mount
   useEffect(() => {
     const fetchTimetableEntries = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          showalert("You must be logged in to view the timetable.", "danger");
-          return;
-        }
         const response = await axios.get(`${API_BASE_URL}/api/timetable`, {
           headers: { "auth-token": token },
         });
@@ -49,13 +43,17 @@ const Timetable = ({ mode, showalert }) => {
     fetchTimetableEntries();
   }, [API_BASE_URL, showalert]);
 
-  // Handler for input changes in the form
+  // Handle input changes for adding/editing entries
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewEntry((prev) => ({ ...prev, [name]: value }));
+    if (editEntry) {
+      setEditEntry((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setNewEntry((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Submit the new timetable entry to the backend
+  // Add a new timetable entry
   const handleAddEntry = async (e) => {
     e.preventDefault();
     if (!newEntry.time || !newEntry.subject) {
@@ -64,16 +62,11 @@ const Timetable = ({ mode, showalert }) => {
     }
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        showalert("You must be logged in to add an entry.", "danger");
-        return;
-      }
       const response = await axios.post(
         `${API_BASE_URL}/api/timetable`,
         newEntry,
         { headers: { "auth-token": token } }
       );
-      // Update state with the new entry
       setTimetableEntries((prev) => [...prev, response.data]);
       setNewEntry({ day: "Monday", time: "", subject: "" });
       showalert("Timetable entry added successfully!", "success");
@@ -83,39 +76,48 @@ const Timetable = ({ mode, showalert }) => {
     }
   };
 
-  // Filter and display only today's events
-  const todaysEntries = timetableEntries.filter(
-    (entry) => entry.day === today
-  );
-
-  // Mark attendance for an entry (only subject is stored for attendance)
-  const markAttendance = async (entry) => {
+  // Edit an existing timetable entry
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        showalert("You must be logged in to mark attendance.", "danger");
-        return;
-      }
-      const response = await axios.post(
-        `${API_BASE_URL}/api/attendance/mark`,
-        {
-          className: entry.subject, // Only the subject is stored
-          status: "present",
-        },
+      const response = await axios.put(
+        `${API_BASE_URL}/api/timetable/${editEntry._id}`,
+        editEntry,
         { headers: { "auth-token": token } }
       );
-      if (response.data) {
-        showalert("Attendance marked successfully!", "success");
-        setAttendance((prev) => ({
-          ...prev,
-          [entry.subject]: true,
-        }));
-      }
+      setTimetableEntries((prev) =>
+        prev.map((entry) =>
+          entry._id === editEntry._id ? response.data : entry
+        )
+      );
+      setEditEntry(null);
+      showalert("Timetable entry updated successfully!", "success");
     } catch (error) {
-      console.error("Error marking attendance:", error);
-      showalert("Error marking attendance.", "danger");
+      console.error("Error updating timetable entry:", error);
+      showalert("Error updating timetable entry.", "danger");
     }
   };
+
+  // Delete a timetable entry
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/api/timetable/${id}`, {
+        headers: { "auth-token": token },
+      });
+      setTimetableEntries((prev) => prev.filter((entry) => entry._id !== id));
+      showalert("Timetable entry deleted successfully!", "success");
+    } catch (error) {
+      console.error("Error deleting timetable entry:", error);
+      showalert("Error deleting timetable entry.", "danger");
+    }
+  };
+
+  // Filter today's entries or view all classes
+  const displayedEntries = viewAll
+    ? timetableEntries
+    : timetableEntries.filter((entry) => entry.day === today);
 
   return (
     <div
@@ -133,14 +135,14 @@ const Timetable = ({ mode, showalert }) => {
     >
       <h2 className="text-center">Timetable</h2>
 
-      {/* Form to add a new timetable entry */}
-      <form onSubmit={handleAddEntry} className="mb-4">
+      {/* Form to add/edit a timetable entry */}
+      <form onSubmit={editEntry ? handleEditSubmit : handleAddEntry} className="mb-4">
         <div className="row g-3">
           <div className="col-md-3">
             <select
               name="day"
               className="form-select"
-              value={newEntry.day}
+              value={editEntry ? editEntry.day : newEntry.day}
               onChange={handleInputChange}
             >
               {daysOfWeek.map((day) => (
@@ -156,7 +158,7 @@ const Timetable = ({ mode, showalert }) => {
               name="time"
               className="form-control"
               placeholder="Time (e.g., 9:00 - 9:50)"
-              value={newEntry.time}
+              value={editEntry ? editEntry.time : newEntry.time}
               onChange={handleInputChange}
             />
           </div>
@@ -166,25 +168,35 @@ const Timetable = ({ mode, showalert }) => {
               name="subject"
               className="form-control"
               placeholder="Class Name"
-              value={newEntry.subject}
+              value={editEntry ? editEntry.subject : newEntry.subject}
               onChange={handleInputChange}
             />
           </div>
           <div className="col-md-2">
             <button type="submit" className="btn btn-primary w-100">
-              Add Entry
+              {editEntry ? "Update Entry" : "Add Entry"}
             </button>
           </div>
         </div>
       </form>
 
-      {/* Display Today's Classes */}
-      <h3 className="text-center">Today's Classes ({today})</h3>
-      {todaysEntries.length > 0 ? (
+      {/* Toggle View Button */}
+      <button
+        className="btn btn-outline-secondary mb-3"
+        onClick={() => setViewAll(!viewAll)}
+      >
+        {viewAll ? "View Today's Classes" : "View All Classes"}
+      </button>
+
+      {/* Display Classes */}
+      <h3 className="text-center">
+        {viewAll ? "All Classes" : `Today's Classes (${today})`}
+      </h3>
+      {displayedEntries.length > 0 ? (
         <ul className="list-group">
-          {todaysEntries.map((entry, index) => (
+          {displayedEntries.map((entry) => (
             <li
-              key={index}
+              key={entry._id}
               className={`list-group-item ${
                 mode === "dark" ? "bg-dark text-light" : ""
               }`}
@@ -196,20 +208,25 @@ const Timetable = ({ mode, showalert }) => {
               }}
             >
               <div>
-                <strong>{entry.time}</strong> - {entry.subject}
+                <strong>{entry.time}</strong> - {entry.subject} ({entry.day})
               </div>
-              <button
-                className="btn btn-outline-success"
-                onClick={() => markAttendance(entry)}
-                disabled={attendance[entry.subject]}
-              >
-                {attendance[entry.subject] ? "Marked" : "Mark Attendance"}
-              </button>
+              <div>
+                <i
+                  className="fa-regular fa-pen-to-square mx-2"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleEditSubmit(entry)}>
+                </i>
+                <i 
+                  className="fa-solid fa-trash-can my-1 mx-2"
+                  style={{ cursor: "pointer", color: mode === 'dark' ? 'white' : 'black' }}
+                  onClick={() => handleDelete(entry._id)}>
+                </i>
+              </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-center">No classes scheduled for today!</p>
+        <p className="text-center">No classes scheduled!</p>
       )}
     </div>
   );
