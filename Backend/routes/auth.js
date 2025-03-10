@@ -88,6 +88,7 @@ router.post(
 );
 
 // ROUTE: Forgot Password - Request a password reset link
+// ROUTE: Forgot Password - Request a password reset link
 router.post(
   "/forgotpassword",
   [body("email", "Enter a valid email").isEmail()],
@@ -115,12 +116,12 @@ router.post(
 
       // Set up Nodemailer transporter using environment variables
       let transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Use TLS, not SSL
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: process.env.EMAIL_USER, // your Gmail address
+          pass: process.env.EMAIL_PASS, // your Gmail App Password if 2FA is enabled
         },
       });
 
