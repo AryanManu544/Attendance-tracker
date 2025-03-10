@@ -136,6 +136,7 @@ router.post(
       await transporter.sendMail(mailOptions);
 
       res.json({ message: "Password reset link sent to email" });
+      console.log("Request body:", req.body);
     } catch (error) {
       console.error("Error in /forgotpassword:", error);
       res.status(500).json({ error: "Server error" });
