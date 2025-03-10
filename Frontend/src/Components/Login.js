@@ -55,7 +55,11 @@ const Login = ({ mode, showalert }) => {
 
       const json = await response.json();
       if (json.authtoken) {
-        localStorage.setItem("token", json.authtoken);
+        if (credentials.remember) {
+          localStorage.setItem("token", json.authtoken);
+        } else {
+          sessionStorage.setItem("token", json.authtoken);
+        }
         showalert("Logged in successfully", "success");
         navigate("/");
       } else {

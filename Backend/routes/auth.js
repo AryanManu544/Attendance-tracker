@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User"); // Your User model
 const router = express.Router();
-
+const nodemailer = require("nodemailer");
 const JWT_SECRET = "Splendid_Ganesha"; // Ideally store this in an .env file
 
 // ROUTE: Create a user using POST "/api/auth/createuser" - No login required
@@ -66,7 +66,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const { email, password, remember } = req.body; // Expecting a 'remember' field
+      const { email, password, remember } = req.body; 
       let user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ error: "Invalid credentials" });
@@ -77,7 +77,6 @@ router.post(
       }
       const payload = { user: { id: user._id } };
 
-      // Set expiration based on "remember me" checkbox
       const tokenExpiry = remember ? "365d" : "1h";
       const authtoken = jwt.sign(payload, JWT_SECRET, { expiresIn: tokenExpiry });
       res.json({ authtoken });
@@ -86,7 +85,7 @@ router.post(
       res.status(500).json({ error: "Server error" });
     }
   }
-);
+);w
 
 // ROUTE: Forgot Password - Request a password reset link
 router.post(
@@ -111,9 +110,30 @@ router.post(
       user.resetTokenExpiration = resetTokenExpiration;
       await user.save();
 
-      // TODO: In production, send this link via email.
+      // Construct reset link (adjust the URL to your domain)
       const resetLink = `http://yourdomain.com/resetpassword?token=${resetToken}`;
-      console.log(`Password reset link (send this via email): ${resetLink}`);
+
+      // Set up Nodemailer transporter using environment variables
+      let transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      // Define the email options
+      let mailOptions = {
+        from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Password Reset Request",
+        text: `Hello,\n\nPlease click the following link to reset your password:\n${resetLink}\n\nIf you did not request a password reset, please ignore this email.`,
+      };
+
+      // Send the email
+      await transporter.sendMail(mailOptions);
 
       res.json({ message: "Password reset link sent to email" });
     } catch (error) {
