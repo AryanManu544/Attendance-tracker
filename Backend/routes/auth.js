@@ -88,7 +88,6 @@ router.post(
 );
 
 // ROUTE: Forgot Password - Request a password reset link
-// ROUTE: Forgot Password - Request a password reset link
 router.post(
   "/forgotpassword",
   [body("email", "Enter a valid email").isEmail()],
