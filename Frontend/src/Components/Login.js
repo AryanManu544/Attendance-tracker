@@ -22,15 +22,14 @@ const Login = ({ mode, showalert }) => {
     document.body.style.height = "100vh";
     document.body.style.margin = "0";
 
-    /*return () => {
-      //resets the background back to default
+    return () => {
       document.body.style.backgroundImage = "";
       document.body.style.backgroundSize = "";
       document.body.style.backgroundPosition = "";
       document.body.style.backgroundRepeat = "";
       document.body.style.height = "";
       document.body.style.margin = "";
-    };*/ 
+    };
   }, [mode]);
 
   const onChange = (e) => {
