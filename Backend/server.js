@@ -8,10 +8,23 @@ const serverless = require("serverless-http");
 const app = express();
 
 // Middleware for JSON parsing and CORS
-app.use(express.json());
+const allowedOrigins = [
+  process.env.CORS_ORIGIN, // e.g., "https://presenze-plum.netlify.app"
+  "http://localhost:3000"
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        // Reflect the request origin in the response header
+        return callback(null, origin);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "auth-token"],
   })
