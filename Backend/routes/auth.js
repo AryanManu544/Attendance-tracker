@@ -85,7 +85,7 @@ router.post(
       res.status(500).json({ error: "Server error" });
     }
   }
-);w
+);
 
 // ROUTE: Forgot Password - Request a password reset link
 router.post(
@@ -119,8 +119,8 @@ router.post(
         port: 587,
         secure: false, // Use TLS, not SSL
         auth: {
-          user: process.env.EMAIL_USER, // your Gmail address
-          pass: process.env.EMAIL_PASS, // your Gmail App Password if 2FA is enabled
+          user: process.env.EMAIL_USER, 
+          pass: process.env.EMAIL_PASS, 
         },
       });
 
