@@ -11,7 +11,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Analytics } from "@vercel/analytics/react";
 import Timetable from './Components/Timetable';
-
+import ForgotPassword from "./Components/ForgotPassword";
+import ResetPassword from "./Components/ResetPassword";
 
 const App = () => {
   const [mode, setMode] = useState("light");
@@ -68,6 +69,8 @@ const App = () => {
           <Route path="/login" element={<Login mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
           <Route path="/signup" element={<Signup mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
           <Route path="/timetable" element={<Timetable mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
+          <Route path="/forgotpassword" element={<ForgotPassword mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
+          <Route path="/resetpassword" element={<ResetPassword mode={mode} showalert={showAlert} toggleMode={toggleMode}/>} />
         </Routes>
         <Analytics />
       </div>

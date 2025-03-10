@@ -2,27 +2,27 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const Login = ({ mode, showalert }) => {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+    remember: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     document.body.setAttribute("data-theme", mode);
-
-    // Set background image on the body
     const backgroundImage =
       mode === "dark"
         ? "/assets/darkmode.jpg"
         : "/assets/lightmode.jpg";
-
     document.body.style.backgroundImage = `url(${backgroundImage})`;
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundRepeat = "no-repeat";
-    document.body.style.height = "100vh"; // Ensure full height
-    document.body.style.margin = "0"; // Remove any default margin
+    document.body.style.height = "100vh";
+    document.body.style.margin = "0";
 
     return () => {
-      // Clean up styles on component unmount
       document.body.style.backgroundImage = "";
       document.body.style.backgroundSize = "";
       document.body.style.backgroundPosition = "";
@@ -33,14 +33,17 @@ const Login = ({ mode, showalert }) => {
   }, [mode]);
 
   const onChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setCredentials({
+      ...credentials,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const API_BASE_URL =
-      process.env.REACT_APP_API_BASE_URL ||
-      "http://localhost:4000";
+      process.env.REACT_APP_API_BASE_URL || "http://localhost:4000";
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -71,7 +74,7 @@ const Login = ({ mode, showalert }) => {
         margin: "4rem auto",
         padding: "1rem",
         borderRadius: "8px",
-        backgroundColor: mode === "dark" ? "#222222cc" : "#ffffffcc", // Semi-transparent card
+        backgroundColor: mode === "dark" ? "#222222cc" : "#ffffffcc",
         boxShadow:
           mode === "dark"
             ? "0px 4px 10px rgba(0,0,0,0.8)"
@@ -119,6 +122,25 @@ const Login = ({ mode, showalert }) => {
         <button type="submit" className="btn btn-outline-primary w-100">
           Sign In
         </button>
+        {/* Row with "Remember Me" on left and "Forgot Password?" on right */}
+        <div className="d-flex justify-content-between align-items-center mt-3">
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              name="remember"
+              id="remember"
+              checked={credentials.remember}
+              onChange={onChange}
+            />
+            <label className="form-check-label" htmlFor="remember">
+              Remember Me
+            </label>
+          </div>
+          <div>
+            <Link to="/forgotpassword">Forgot Password?</Link>
+          </div>
+        </div>
       </form>
       <div className="text-center mt-3">
         Don't have an account? <Link to="/signup">Sign up</Link>
