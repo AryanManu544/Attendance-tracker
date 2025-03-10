@@ -111,7 +111,7 @@ router.post(
       await user.save();
 
       // Construct reset link (adjust the URL to your domain)
-      const resetLink = `http://yourdomain.com/resetpassword?token=${resetToken}`;
+      const resetLink = `https://presenze-plum.netlify.app/resetpassword?token=${resetToken}`;
 
       // Set up Nodemailer transporter using environment variables
       let transporter = nodemailer.createTransport({
@@ -126,7 +126,7 @@ router.post(
 
       // Define the email options
       let mailOptions = {
-        from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+        from: `"Presenze" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: "Password Reset Request",
         text: `Hello,\n\nPlease click the following link to reset your password:\n${resetLink}\n\nIf you did not request a password reset, please ignore this email.`,
