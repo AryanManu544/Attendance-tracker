@@ -85,7 +85,7 @@ router.post(
       res.status(500).json({ error: "Server error" });
     }
   }
-);w
+);
 
 // ROUTE: Forgot Password - Request a password reset link
 router.post(
